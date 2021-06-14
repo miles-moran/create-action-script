@@ -1,3 +1,4 @@
+
 const create_action = async () => {
   const fs = require("fs");
   const readline = require("readline");
@@ -255,7 +256,7 @@ const create_action = async () => {
           <script lang="ts">
           import { defineComponent, watch } from "vue";
           import { ${data.storeExport}, ${
-          data.actionTypeNonCapitalized
+          data.actionType
         } } from "@/stores/${data.storeName.replace(".ts", "")}";
           
           export default defineComponent({
@@ -291,21 +292,6 @@ const create_action = async () => {
           );
       };
 
-      const attempt = (intention, writeFunction) => {
-        try {
-          writeFunction();
-          printLine();
-          console.log(`Success: ${intention}`);
-          printLine();
-        } catch (e) {
-          printLine();
-          console.log(`Error: ${intention}`);
-          printLine();
-          console.log(e);
-          return;
-        }
-      };
-
       const modifyHoisting = () => {
         const hoister = fs.readFileSync(data.hoistPath, "utf-8");
         let lines = `\n    <${data.componentName} />`;
@@ -321,6 +307,21 @@ const create_action = async () => {
         replaced = findFirstStringThatMatchesAndInsert(replaced, [`} from "vue";`], lines);
         lines = `\n${data.componentName},`;
         replaced = findFirstStringThatMatchesAndInsert(replaced, [`components: {`], lines);
+        !testing && fs.writeFileSync(data.hoistPath, replaced, "utf-8");
+      };
+      const attempt = (intention, writeFunction) => {
+        try {
+          writeFunction();
+          printLine();
+          console.log(`Success: ${intention}`);
+          printLine();
+        } catch (e) {
+          printLine();
+          console.log(`Error: ${intention}`);
+          printLine();
+          console.log(e);
+          return;
+        }
       };
       attempt("Modifying action enums within the store.", modifyActionEnum);
       attempt("Modifying execute function within the store.", modifyExecuteFunction);
@@ -331,6 +332,7 @@ const create_action = async () => {
         );
         attempt("Importing the action component within the hoisting component.", modifyHoisting);
       }
+
       printLine();
       console.log("Done");
     };
